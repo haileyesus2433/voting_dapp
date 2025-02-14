@@ -1,6 +1,6 @@
 #![allow(clippy::result_large_err)]
 
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::sysvar::instructions};
 
 declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 
@@ -8,63 +8,36 @@ declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 pub mod voting {
     use super::*;
 
-  pub fn close(_ctx: Context<CloseVoting>) -> Result<()> {
-    Ok(())
-  }
-
-  pub fn decrement(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.voting.count = ctx.accounts.voting.count.checked_sub(1).unwrap();
-    Ok(())
-  }
-
-  pub fn increment(ctx: Context<Update>) -> Result<()> {
-    ctx.accounts.voting.count = ctx.accounts.voting.count.checked_add(1).unwrap();
-    Ok(())
-  }
-
-  pub fn initialize(_ctx: Context<InitializeVoting>) -> Result<()> {
-    Ok(())
-  }
-
-  pub fn set(ctx: Context<Update>, value: u8) -> Result<()> {
-    ctx.accounts.voting.count = value.clone();
-    Ok(())
-  }
+    pub fn initialize_poll(ctx: Context<InitializePoll>) -> Result<()> {
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
-pub struct InitializeVoting<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
+#[instruction(poll_id:u64)]
+pub struct InitializePoll<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
 
-  #[account(
-  init,
-  space = 8 + Voting::INIT_SPACE,
-  payer = payer
-  )]
-  pub voting: Account<'info, Voting>,
-  pub system_program: Program<'info, System>,
-}
-#[derive(Accounts)]
-pub struct CloseVoting<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
+    #[account(
+      init,
+      payer = signer,
+      space = 8 + Poll::INIT_SPACE,
+      seeds = [poll_id.to_le_bytes().as_ref()],
+      bump
+    )]
+    pub poll: Account<'info, Poll>,
 
-  #[account(
-  mut,
-  close = payer, // close account and return lamports to payer
-  )]
-  pub voting: Account<'info, Voting>,
-}
-
-#[derive(Accounts)]
-pub struct Update<'info> {
-  #[account(mut)]
-  pub voting: Account<'info, Voting>,
+    pub system_program: Program<'info, System>,
 }
 
 #[account]
 #[derive(InitSpace)]
-pub struct Voting {
-  count: u8,
+pub struct Poll {
+    pub poll_id: u64,
+    #[max_len(256)]
+    pub description: String,
+    pub poll_start: u64,
+    pub poll_end: u64,
+    pub candidate_amount: u64,
 }
