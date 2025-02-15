@@ -82,4 +82,18 @@ describe("Voting", () => {
     expect(arsenal.candidateVote.toNumber()).toEqual(0);
     expect(leciester.candidateVote.toNumber()).toEqual(0);
   });
+
+  it("vote", async () => {
+    await votingProgram.methods.vote(new anchor.BN(1), "Arsenal").rpc();
+
+    const [arsenalAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, "le", 8), Buffer.from("Arsenal")],
+      votingAddress
+    );
+    let arsenal = await votingProgram.account.candidate.fetch(arsenalAddress);
+
+    console.log(arsenal);
+
+    expect(arsenal.candidateVote.toNumber()).toEqual(1);
+  });
 });
