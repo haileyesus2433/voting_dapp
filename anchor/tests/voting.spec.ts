@@ -3,27 +3,25 @@ import { Program } from "@coral-xyz/anchor";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { Voting } from "../target/types/voting";
 import { BankrunProvider, startAnchor } from "anchor-bankrun";
-import exp from "constants";
 
 const IDL = require("../target/idl/voting.json");
 const votingAddress = new PublicKey(
-  "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF"
+  "DVoxcpEKv5yb4sPQk4rsnWp6eeXnxiEUMXbffWvq9UMi"
 );
 describe("Voting", () => {
   let context;
   let provider;
-  let votingProgram: Program<Voting>;
+  anchor.setProvider(anchor.AnchorProvider.env());
+  let votingProgram = anchor.workspace.Voting as Program<Voting>;
 
   beforeAll(async () => {
-    context = await startAnchor(
-      "",
-      [{ name: "voting", programId: votingAddress }],
-      []
-    );
-
-    provider = new BankrunProvider(context);
-
-    votingProgram = new Program<Voting>(IDL, provider);
+    // context = await startAnchor(
+    //   "",
+    //   [{ name: "voting", programId: votingAddress }],
+    //   []
+    // );
+    // provider = new BankrunProvider(context);
+    // votingProgram = new Program<Voting>(IDL, provider);
   });
 
   it("Initialize Poll", async () => {
@@ -82,6 +80,7 @@ describe("Voting", () => {
     expect(arsenal.candidateVote.toNumber()).toEqual(0);
     expect(leciester.candidateVote.toNumber()).toEqual(0);
   });
+  36;
 
   it("vote", async () => {
     await votingProgram.methods.vote(new anchor.BN(1), "Arsenal").rpc();
